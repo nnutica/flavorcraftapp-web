@@ -13,18 +13,21 @@ export default function MealPlanner() {
   const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
   const meals = ["เช้า", "กลางวัน", "เย็น"];
 
-  const emptyPlan = days.map(() => meals.map(() => ""));
-  const [plan, setPlan] = useState<string[][]>(emptyPlan);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // ⭐ โหลดครั้งแรก
+  // ⭐ เปลี่ยนรูปแบบข้อมูล → array ของ object
+  const emptyPlan = days.map(() => ({
+    meals: meals.map(() => "")
+  }));
 
-  // ⭐ โหลดข้อมูลผู้ใช้ + ข้อมูลจาก Firestore
+  const [plan, setPlan] = useState<{ meals: string[] }[]>(emptyPlan);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // ⭐ โหลดข้อมูลผู้ใช้ + meal plan
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(Auth, async (user) => {
       if (user) {
         setUserId(user.uid);
 
-        // โหลดข้อมูลจาก Firestore
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
 
@@ -38,12 +41,14 @@ export default function MealPlanner() {
     return () => unsubscribe();
   }, []);
 
+  // ⭐ อัปเดตมื้ออาหารใน state
   const updateMeal = (dayIndex: number, mealIndex: number, value: string) => {
     const newPlan = [...plan];
-    newPlan[dayIndex][mealIndex] = value;
+    newPlan[dayIndex].meals[mealIndex] = value;
     setPlan(newPlan);
   };
 
+  // ⭐ เคลียร์ทั้งหมด
   const clearAll = () => setPlan(emptyPlan);
 
   // ⭐ บันทึกลง Firestore
@@ -57,7 +62,7 @@ export default function MealPlanner() {
       await setDoc(
         doc(db, "users", userId),
         { mealPlan: plan },
-        { merge: true } // ⭐ ป้องกันการลบข้อมูลอื่นใน users/{uid}
+        { merge: true }
       );
 
       alert("บันทึกข้อมูลเรียบร้อย! 🎉");
@@ -81,6 +86,7 @@ export default function MealPlanner() {
           🗓️ วางแผนอาหารประจำสัปดาห์
         </h1>
 
+        {/* กล่องใหญ่พื้นหลัง */}
         <div className="grid grid-cols-1 gap-6 bg-primary/20 p-4 rounded-xl">
           {days.map((day, dayIndex) => (
             <div
@@ -95,7 +101,7 @@ export default function MealPlanner() {
                     <label className="text-sm text-gray-600">{meal}</label>
                     <input
                       type="text"
-                      value={plan[dayIndex][mealIndex]}
+                      value={plan[dayIndex].meals[mealIndex]}
                       onChange={(e) =>
                         updateMeal(dayIndex, mealIndex, e.target.value)
                       }
@@ -109,6 +115,7 @@ export default function MealPlanner() {
           ))}
         </div>
 
+        {/* ปุ่มบันทึก + ล้างทั้งหมด */}
         <div className="mt-8 flex justify-center gap-4">
           <button
             onClick={saveData}
