@@ -2,21 +2,40 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import { Auth } from "../../lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+
+// Firestore
+import { db } from "../../lib/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export default function MealPlanner() {
   const days = ["จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์"];
   const meals = ["เช้า", "กลางวัน", "เย็น"];
 
-  const [plan, setPlan] = useState<string[][]>([]);
+  const emptyPlan = days.map(() => meals.map(() => ""));
+  const [plan, setPlan] = useState<string[][]>(emptyPlan);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // ⭐ โหลดครั้งแรก
 
-  // ⭐ โหลดข้อมูลจาก localStorage ตอนเปิดหน้า
+  // ⭐ โหลดข้อมูลผู้ใช้ + ข้อมูลจาก Firestore
   useEffect(() => {
-    const saved = localStorage.getItem("mealPlan");
-    if (saved) {
-      setPlan(JSON.parse(saved));
-    } else {
-      setPlan(days.map(() => meals.map(() => "")));
-    }
+    const unsubscribe = onAuthStateChanged(Auth, async (user) => {
+      if (user) {
+        setUserId(user.uid);
+
+        // โหลดข้อมูลจาก Firestore
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (snap.exists() && snap.data().mealPlan) {
+          setPlan(snap.data().mealPlan);
+        }
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const updateMeal = (dayIndex: number, mealIndex: number, value: string) => {
@@ -25,18 +44,32 @@ export default function MealPlanner() {
     setPlan(newPlan);
   };
 
-  const clearAll = () => {
-    const empty = days.map(() => meals.map(() => ""));
-    setPlan(empty);
-    localStorage.removeItem("mealPlan");
+  const clearAll = () => setPlan(emptyPlan);
+
+  // ⭐ บันทึกลง Firestore
+  const saveData = async () => {
+    if (!userId) {
+      alert("กรุณาเข้าสู่ระบบก่อนบันทึกข้อมูล");
+      return;
+    }
+
+    try {
+      await setDoc(
+        doc(db, "users", userId),
+        { mealPlan: plan },
+        { merge: true } // ⭐ ป้องกันการลบข้อมูลอื่นใน users/{uid}
+      );
+
+      alert("บันทึกข้อมูลเรียบร้อย! 🎉");
+    } catch (error) {
+      console.error("Save Error:", error);
+      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    }
   };
 
-  const saveData = () => {
-    localStorage.setItem("mealPlan", JSON.stringify(plan));
-    alert("บันทึกข้อมูลเรียบร้อย! 🎉");
-  };
-
-  if (plan.length === 0) return null; // ป้องกัน error ตอน initial state
+  if (loading) {
+    return <div className="p-8 text-center text-gray-600">กำลังโหลดข้อมูล...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-peach">
