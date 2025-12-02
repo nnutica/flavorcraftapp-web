@@ -10,6 +10,7 @@ import RecipeCard from "../../components/RecipeCard";
 import GithubImageUploader from "../../components/GithubImageUploader";
 import type { User as AppUser } from "../../../database/user";
 import { useSafeDateFormatter } from "../../../hooks/useClientSide";
+import Image from "next/image";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -190,11 +191,14 @@ export default function UserProfilePage() {
             <div className="flex-shrink-0">
               <div className="relative">
                 {(editing && isOwnProfile ? avatarUrl : profileUser.imageUrl) ? (
-                  <img
-                    src={editing && isOwnProfile ? avatarUrl : profileUser.imageUrl}
-                    alt="Profile"
-                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                  <Image
+                    src={(editing && isOwnProfile ? avatarUrl : profileUser.imageUrl) || "/default-avatar.png"}
+                    alt="Avatar"
+                    width={100}
+                    height={100}
+                    priority={true} // โหลดทันที
                   />
+
                 ) : (
                   <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center border-4 border-gray-200">
                     <span className="text-2xl font-bold text-white">

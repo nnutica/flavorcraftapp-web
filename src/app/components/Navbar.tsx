@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Auth } from "../../lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { logout } from "../../lib/authService";
+import Image from "next/image";
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
@@ -77,7 +78,7 @@ export default function Navbar() {
               <div className="flex items-center space-x-3">
                 <Link href={`/Profile/${user.uid}`} className="flex items-center space-x-2 hover:bg-gray-50 px-2 py-1 rounded-md">
                   {user.photoURL ? (
-                    <img
+                    <Image
                       src={user.photoURL}
                       alt="Profile"
                       className="w-8 h-8 rounded-full object-cover"

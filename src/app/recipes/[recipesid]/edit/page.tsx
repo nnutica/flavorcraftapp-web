@@ -6,7 +6,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Auth } from '@/lib/firebase';
 import { fetchRecipeById, updateRecipe, deleteRecipe } from '@/lib/authService';
 import GithubImageUploader from '../../../components/GithubImageUploader';
-
+import Image from "next/image";
 interface Ingredient {
     name: string;
     qty: number;
@@ -391,7 +391,7 @@ export default function EditRecipePage() {
                         
                         {coverUrl && (
                             <div className="mb-4">
-                                <img
+                                <Image
                                     src={coverUrl}
                                     alt="รูปหน้าปก"
                                     className="w-full max-w-md h-48 object-cover rounded-lg"
@@ -519,7 +519,7 @@ export default function EditRecipePage() {
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                 {additionalImages.map((imageUrl, index) => (
                                     <div key={index} className="relative">
-                                        <img
+                                        <Image
                                             src={imageUrl}
                                             alt={`รูปเพิ่มเติม ${index + 1}`}
                                             className="w-full h-32 object-cover rounded-lg"

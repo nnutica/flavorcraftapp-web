@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-
+import Image from "next/image";
 interface UploadResponse {
   success: boolean;
   data?: {
@@ -215,7 +215,7 @@ export default function GithubImageUploader({
 
           {preview && (
             <div className="relative">
-              <img
+              <Image
                 src={preview}
                 alt="Preview"
                 className="max-w-full h-auto max-h-64 object-contain border rounded-lg"

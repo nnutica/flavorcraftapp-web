@@ -8,7 +8,7 @@ import { Auth, db } from "../../../lib/firebase";
 import GithubImageUploader from "../../components/GithubImageUploader";
 import Navbar from "../../components/Navbar";
 import type { Ingredient, Recipe } from "../../../database/recipes";
-
+import Image from "next/image";
 interface UploadedImage {
   url: string;
   fileName: string;
@@ -271,7 +271,7 @@ export default function NewRecipePage() {
                   <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
                     <p className="text-green-800 text-sm font-medium">รูปปกที่เลือก:</p>
                     <div className="mt-2">
-                      <img src={coverImage} alt="Cover preview" className="w-32 h-24 object-cover rounded" />
+                      <Image src={coverImage} alt="Cover preview" className="w-32 h-24 object-cover rounded" />
                     </div>
                   </div>
                 )}
@@ -418,7 +418,7 @@ export default function NewRecipePage() {
                       {recipeImages.map((image, index) => (
                         <div key={index} className="relative border rounded-lg p-3 bg-gray-50">
                           <div className="aspect-w-16 aspect-h-9 mb-2">
-                            <img
+                            <Image
                               src={image.url}
                               alt={`Recipe step ${index + 1}`}
                               className="w-full h-32 object-cover rounded"
